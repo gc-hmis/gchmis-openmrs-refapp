@@ -12,3 +12,7 @@ services:
   backend:
     build:
       context: .
+
+  db:
+    ports:
+      - "3307:3306"
