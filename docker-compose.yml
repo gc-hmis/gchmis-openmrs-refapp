@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   gateway:
     image: openmrs/openmrs-reference-application-3-gateway:${TAG:-qa}
@@ -16,8 +14,15 @@ services:
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
-      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json
+      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json,/openmrs/spa/config-core-gchmis.json
       SPA_DEFAULT_LOCALE:
+      SPA_PAGE_TITLE: Pedicare
+    volumes:
+      - ${GCH_OPENMRS_CONFIG_PATH}/frontend/config-core-gchmis.json:/usr/share/nginx/html/config-core-gchmis.json:ro
+      - ${GCH_OPENMRS_CONFIG_PATH}/frontend/assets:/usr/share/nginx/html/assets:ro
+      - ${GCH_OPENMRS_CONFIG_PATH}/frontend/favicon.png:/usr/share/nginx/html/favicon.ico:ro
+      - ./frontend/startup.sh:/usr/local/bin/startup.sh:ro
+    command: ["sh", "/usr/local/bin/startup.sh"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
       timeout: 5s
@@ -41,7 +46,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
       timeout: 5s
     volumes:
-      - openmrs-data:/openmrs/data
+      - ${GCH_OPENMRS_CONFIG_PATH}/configuration:/openmrs/distribution/openmrs_core/configuration
 
   # MariaDB
   db:

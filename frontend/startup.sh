@@ -48,14 +48,34 @@ fi
 
 SPA_DEFAULT_LOCALE=${SPA_DEFAULT_LOCALE:-en_GB}
 
+# Set custom browser tab title if provided
+if [ -n "${SPA_PAGE_TITLE:-}" ]; then
+  sed -i "s|<title>OpenMRS</title>|<title>$SPA_PAGE_TITLE</title>|" "/usr/share/nginx/html/index.html"
+fi
+
 # Substitute environment variables in the html file
 # This allows us to override parts of the compiled file at runtime
 if [ -f "/usr/share/nginx/html/index.html" ]; then
   envsubst '${IMPORTMAP_URL} ${SPA_PATH} ${API_URL} ${SPA_CONFIG_URLS} ${SPA_DEFAULT_LOCALE}' < "/usr/share/nginx/html/index.html" | sponge "/usr/share/nginx/html/index.html"
+
+  if [ -f "/usr/share/nginx/html/assets/styles/gchmis-theme.css" ]; then
+    SPA_THEME_PATH="${SPA_PATH%/}/assets/styles/gchmis-theme.css"
+    if grep -q "${SPA_PATH%/}/gchmis-theme.css" "/usr/share/nginx/html/index.html"; then
+      sed -i -e "s#${SPA_PATH%/}/gchmis-theme.css#$SPA_THEME_PATH#g" "/usr/share/nginx/html/index.html"
+    elif ! grep -q 'assets/styles/gchmis-theme.css' "/usr/share/nginx/html/index.html"; then
+      sed -i -e "s#</head>#  <link rel=\"stylesheet\" href=\"$SPA_THEME_PATH\">\\n</head>#" "/usr/share/nginx/html/index.html"
+    fi
+  fi
 fi
 
 if [ -f "/usr/share/nginx/html/service-worker.js" ]; then
   envsubst '${IMPORTMAP_URL} ${SPA_PATH} ${API_URL}' < "/usr/share/nginx/html/service-worker.js" | sponge "/usr/share/nginx/html/service-worker.js"
+fi
+
+# Substitute SPA_PATH in the web app manifest (icons reference $SPA_PATH)
+manifest=$(find /usr/share/nginx/html -maxdepth 1 -name 'manifest.*.json' | head -1)
+if [ -n "$manifest" ]; then
+  envsubst '${SPA_PATH}' < "$manifest" | sponge "$manifest"
 fi
 
 exec nginx -g "daemon off;"
