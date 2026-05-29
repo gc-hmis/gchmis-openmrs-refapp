@@ -56,6 +56,12 @@ To help us keep track of things, we ask that you suffix any files you add with e
 those that should be part of the core package. For example, a form named `test_form.json` would become
 `test_core-core_demo.json`.
 
-Frontend configuration can be found in `frontend/config-core_demo.json`.
+Frontend configuration has two layers:
+
+* `frontend/config-core_demo.json` contains the stock demo configuration.
+* `${GCH_OPENMRS_CONFIG_PATH}/frontend/config-core-gchmis.json` contains GCHMIS overrides and is mounted into the
+  frontend container as `/usr/share/nginx/html/config-core-gchmis.json`.
+
+The app shell loads the demo config first and the GCHMIS config second, so values in the GCHMIS file override demo values.
 
 Thanks!
