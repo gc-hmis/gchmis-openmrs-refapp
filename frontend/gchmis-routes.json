@@ -1,0 +1,44 @@
+{
+  "@gchmis/esm-gchmis-assessments": {
+    "workspaces": [
+      {
+        "name": "gchmis-flacc-assessment",
+        "component": "flaccAssessmentWorkspace",
+        "title": "Pain Assessment (FLACC)",
+        "type": "form",
+        "canHide": true,
+        "canMaximize": false,
+        "width": "wider"
+      },
+      {
+        "name": "gchmis-fall-risk-assessment",
+        "component": "fallRiskAssessmentWorkspace",
+        "title": "Fall Risk Assessment",
+        "type": "form",
+        "canHide": true,
+        "canMaximize": false,
+        "width": "wider"
+      }
+    ],
+    "extensions": [
+      {
+        "name": "gchmis-flacc-button",
+        "component": "flaccButton",
+        "slot": "action-menu-patient-chart-items-slot",
+        "order": 11,
+        "meta": {
+          "title": "Pain Assessment (FLACC)"
+        }
+      },
+      {
+        "name": "gchmis-fall-risk-button",
+        "component": "fallRiskButton",
+        "slot": "action-menu-patient-chart-items-slot",
+        "order": 12,
+        "meta": {
+          "title": "Fall Risk Assessment"
+        }
+      }
+    ]
+  }
+}

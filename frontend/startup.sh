@@ -11,11 +11,12 @@ if [ -n "${IMPORTMAP_URL}" ]; then
     [ -f "/usr/share/nginx/html/service-worker.js" ] && \
       sed -i -e 's/\("|''\)$SPA_PATH\/importmap.json\("|''\)/\1$IMPORTMAP_URL\1/g' "/usr/share/nginx/html/service-worker.js"
   else
+    TIMESTAMP=$(date +%s)
     [ -f "/usr/share/nginx/html/index.html"  ] && \
-      sed -i -e 's/\("|''\)importmap.json\("|''\)/\1$IMPORTMAP_URL\1/g' "/usr/share/nginx/html/index.html"
+      sed -i -e "s/importmap.json/importmap.json?v=$TIMESTAMP/g" "/usr/share/nginx/html/index.html"
 
     [ -f "/usr/share/nginx/html/service-worker.js" ] && \
-      sed -i -e 's/\("|''\)importmap.json\("|''\)/\1$IMPORTMAP_URL\1/g' "/usr/share/nginx/html/service-worker.js"
+      sed -i -e "s/importmap.json/importmap.json?v=$TIMESTAMP/g" "/usr/share/nginx/html/service-worker.js"
   fi
 fi
 
@@ -69,7 +70,22 @@ if [ -f "/usr/share/nginx/html/index.html" ]; then
 fi
 
 if [ -f "/usr/share/nginx/html/service-worker.js" ]; then
-  envsubst '${IMPORTMAP_URL} ${SPA_PATH} ${API_URL}' < "/usr/share/nginx/html/service-worker.js" | sponge "/usr/share/nginx/html/service-worker.js"
+  envsubst '${IMPORTMAP_URL} ${SPA_PATH} ${Ayarn start --backend=http://localhost:8080/openmrsPI_URL}' < "/usr/share/nginx/html/service-worker.js" | sponge "/usr/share/nginx/html/service-worker.js"
+fi
+
+# ── Patch importmap.json and routes.registry.json for @gchmis/esm-gchmis-assessments ──
+TIMESTAMP=$(date +%s)
+if [ -f "/usr/share/nginx/html/importmap.json" ] && [ -f "/usr/share/nginx/html/gchmis-routes.json" ] && [ -f "/usr/share/nginx/html/routes.registry.json" ]; then
+  echo "Patching importmap.json with timestamp $TIMESTAMP..."
+  jq ".imports[\"@gchmis/esm-gchmis-assessments\"] = \"./gchmis-esm-gchmis-assessments.js?v=$TIMESTAMP\"" /usr/share/nginx/html/importmap.json | sponge /usr/share/nginx/html/importmap.json
+
+  echo "Patching routes.registry.json..."
+  # Use explicit key assignment instead of recursive merge (*) to avoid overwriting nested arrays
+  GCHMIS_ROUTES=$(cat /usr/share/nginx/html/gchmis-routes.json)
+  jq --argjson gchmis "$GCHMIS_ROUTES" '. + $gchmis' /usr/share/nginx/html/routes.registry.json | sponge /usr/share/nginx/html/routes.registry.json
+
+  echo "Verifying gchmis workspace registration..."
+  jq '.["@gchmis/esm-gchmis-assessments"].workspaces' /usr/share/nginx/html/routes.registry.json
 fi
 
 # Substitute SPA_PATH in the web app manifest (icons reference $SPA_PATH)
