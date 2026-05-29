@@ -39,6 +39,20 @@
     "visitQueueNumberAttributeUuid": "",
     "defaultFacilityUrl": ""
   },
+  "@openmrs/esm-patient-vitals-app": {
+    "vitals": {
+      "useFormEngine": true,
+      "formName": "Triage Vitals Assessment",
+      "formUuid": "85ce9059-9065-3b9e-9e5f-26c5b3b4dcb6",
+      "encounterTypeUuid": "67a71486-1a54-468f-ac3e-7091a9a79584"
+    },
+    "biometrics": {
+      "useFormEngine": true,
+      "formName": "Triage Vitals Assessment",
+      "formUuid": "85ce9059-9065-3b9e-9e5f-26c5b3b4dcb6",
+      "encounterTypeUuid": "67a71486-1a54-468f-ac3e-7091a9a79584"
+    }
+  },
   "@openmrs/esm-styleguide": {
     "Brand color #1": "#005d5d"
   }

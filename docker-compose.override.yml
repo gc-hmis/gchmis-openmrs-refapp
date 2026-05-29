@@ -5,7 +5,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ..
+      dockerfile: gchmis-openmrs-refapp/frontend/Dockerfile.dev
 
   backend:
     build:

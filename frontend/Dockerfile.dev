@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+ARG TAG=3.5.0
+
+# ==========================================
+# STAGE 1: BUILD THE REACT ASSESSMENTS MODULE
+# ==========================================
+FROM node:18-alpine AS builder
+WORKDIR /build
+
+# The build context is the HMIS root (.. relative to gchmis-openmrs-refapp)
+COPY esm-gchmis-assessments /build
+
+# Install dependencies and build the JS files inside the container
+RUN yarn install
+RUN yarn build
+
+
+# ==========================================
+# STAGE 2: FINAL OPENMRS FRONTEND CONTAINER
+# ==========================================
+FROM openmrs/openmrs-reference-application-3-frontend:${TAG}
+
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache moreutils jq
+
+# Copy the compiled JS files from STAGE 1
+COPY --from=builder /build/dist/*.js /usr/share/nginx/html/
+
+# Copy your other config files from the HMIS root context
+COPY gchmis-openmrs-refapp/frontend/gchmis-routes.json /usr/share/nginx/html/gchmis-routes.json
+COPY gchmis-openmrs-refapp/frontend/config-core_demo.json /usr/share/nginx/html/
+COPY gchmis-openmrs-refapp/frontend/nginx.conf /etc/nginx/nginx.conf
+COPY gchmis-openmrs-refapp/frontend/startup.sh /usr/local/bin/startup.sh
+
+RUN chmod +x /usr/local/bin/startup.sh
+
+CMD ["/usr/local/bin/startup.sh"]
